@@ -6,5 +6,4 @@ data:
 kind: Secret
 metadata:
   name: vault-ha-tls
-  namespace: vault-csi
 type: Opaque
