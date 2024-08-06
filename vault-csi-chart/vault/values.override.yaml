@@ -36,7 +36,7 @@ server:
       enabled: false
    affinity: ""
    dataStorage:
-     storageClass: argo-vault-csi-storage
+     storageClass: local-vault-csi-storage
    ha:
       enabled: true
       replicas: 2
