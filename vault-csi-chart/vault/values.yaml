@@ -1,0 +1,79 @@
+global:
+   imagePullSecrets:
+   - name: regcred
+   enabled: true
+   tlsDisable: false
+injector:
+   enabled: false
+#   image:
+#     repository: "registry.connect.redhat.com/hashicorp/vault-k8s"
+#     tag: "latest"
+#   agentImage:
+#     repository: "registry.connect.redhat.com/hashicorp/vault"
+#     tag: "latest"
+
+csi:
+  enabled: true
+
+server:
+   image:
+     repository: "registry.connect.redhat.com/hashicorp/vault"
+     tag: "latest"
+   extraEnvironmentVars:
+      VAULT_CACERT: /vault/userconfig/vault-ha-tls/vault.ca
+      VAULT_TLSCERT: /vault/userconfig/vault-ha-tls/vault.crt
+      VAULT_TLSKEY: /vault/userconfig/vault-ha-tls/vault.key
+   volumes:
+      - name: userconfig-vault-ha-tls
+        secret:
+         defaultMode: 420
+         secretName: vault-ha-tls
+   volumeMounts:
+      - mountPath: /vault/userconfig/vault-ha-tls
+        name: userconfig-vault-ha-tls
+        readOnly: true
+   standalone:
+      enabled: false
+   affinity: ""
+   dataStorage:
+     storageClass: local-vault-csi-storage
+   ha:
+      enabled: true
+      replicas: 2
+      raft:
+         enabled: true
+         setNodeId: true
+         config: |
+            cluster_name = "vault-csi-integrated-storage"
+            ui = true
+            listener "tcp" {
+               tls_disable = 0
+               address = "[::]:8200"
+               cluster_address = "[::]:8201"
+               tls_cert_file = "/vault/userconfig/vault-ha-tls/vault.crt"
+               tls_key_file  = "/vault/userconfig/vault-ha-tls/vault.key"
+               tls_client_ca_file = "/vault/userconfig/vault-ha-tls/vault.ca"
+            }
+            storage "raft" {
+               path = "/vault/data"
+               retry_join {
+                 leader_api_addr = "https://vault-csi-0.vault-csi-internal:8200"
+                 leader_ca_cert_file = "/vault/userconfig/vault-ha-tls/vault.ca"
+                 leader_client_cert_file = "/vault/userconfig/vault-ha-tls/vault.crt"
+                 leader_client_key_file = "/vault/userconfig/vault-ha-tls/vault.key"
+               }
+               retry_join {
+                 leader_api_addr = "https://vault-csi-1.vault-csi-internal:8200"
+                 leader_ca_cert_file = "/vault/userconfig/vault-ha-tls/vault.ca"
+                 leader_client_cert_file = "/vault/userconfig/vault-ha-tls/vault.crt"
+                 leader_client_key_file = "/vault/userconfig/vault-ha-tls/vault.key"
+               }
+            }
+            disable_mlock = true
+            service_registration "kubernetes" {}
+# Vault UI
+ui:
+  enabled: true
+  serviceType: "LoadBalancer"
+  serviceNodePort: null
+  externalPort: 443 # Changed from 8200 to 443
