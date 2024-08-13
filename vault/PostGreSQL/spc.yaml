@@ -1,0 +1,29 @@
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: postgresql-db
+spec:
+  provider: vault
+  secretObjects:
+    - secretName: postgresql-db-secret
+      type: Opaque
+      data:
+        - objectName: dbPassword
+          key: password
+        - objectName: dbName
+          key: database
+        - objectName: dbUser
+          key: username
+  parameters:
+    vaultAddress: "http://argo-vault-csi-internal.vault-csi-argocd:8200"
+    roleName: 'postgresql-role'
+    objects: |
+      - objectName: "dbPassword"
+        secretPath: "secret/data/database/postgresql"
+        secretKey: "password"
+      - objectName: "dbName"
+        secretPath: "secret/data/database/postgresql"
+        secretKey: "database"
+      - objectName: "dbUser"
+        secretPath: "secret/data/database/postgresql"
+        secretKey: "username"

@@ -1,0 +1,14 @@
+In initialized and Kubernetes auth serviceaccount enabled CSI Vault
+
+# If didn't enabled kv v2 secret engine named secret
+vault enable -version=2 -path=secret kv
+
+vault kv put secret/database/postgresql password=anar1234 username=ps_user database=ps_db
+
+vault policy write postgresql-policy - << EOF
+path "secret/data/database/postgresql" {
+  capabilities = ["read"]
+}
+EOF
+
+vault write auth/kubernetes/role/postgresql-role bound_service_account_names=postgresql-sa bound_service_account_namespaces=postgresql policies=postgresql-policy ttl=1h

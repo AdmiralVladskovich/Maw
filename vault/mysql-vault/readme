@@ -5,19 +5,19 @@ vault secrets enable database
 
 vault write database/config/mysql-database \
   plugin_name=mysql-database-plugin \
-  connection_url="{{username}}:{{password}}@tcp(mysql-  slave.default.svc.cluster.local:3306)/" \
+  connection_url="{{username}}:{{password}}@tcp(mysql.mysql.svc.cluster.local:3306)/" \
   allowed_roles="mysql-role" \
   username="root" \
   password="password"
 
-  We are using mysql-database-plugin and the root user and the password that we created above to connect to the database. allowed_roles tell which vault roles can call this plugin. mysql-slave.default.svc.cluster.local:3306 is the name of MySQL DB service.
+  We are usimysql-deployment-748cc945b6-bwrx5ng mysql-database-plugin and the root user and the password that we created above to connect to the database. allowed_roles tell which vault roles can call this plugin. mysql-slave.default.svc.cluster.local:3306 is the name of MySQL DB service.
 
 
   vault write database/roles/mysql-role \
   db_name=mysql-database \
   creation_statements="CREATE USER '{{name}}'@'%' IDENTIFIED BY '{{password}}';GRANT SELECT ON *.* TO '{{name}}'@'%';" \
-  default_ttl="1h" \
-  max_ttl="24h"
+  default_ttl="1m" \
+  max_ttl="2m"
 
 db_name is the DB connection that we created above. creation_statement describes command for creating the temporary user. default_ttl describe the lease period of the credentials and max_ttl sets the max period for which the lease can be extended.
 
