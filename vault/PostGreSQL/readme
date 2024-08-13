@@ -23,8 +23,8 @@ vault write database/config/postgresql-database \
   plugin_name=postgresql-database-plugin \
   connection_url="postgresql://{{username}}:{{password}}@postgres.postgresql.svc.cluster.local:5432/postgres?sslmode=disable" \
   allowed_roles="postgres-role" \
-  username="ps_user" \
-  password="anar1234"
+  username="postgres" \
+  password="postgres"
 
 vault write database/roles/postgres-role \
    db_name=postgresql-database \

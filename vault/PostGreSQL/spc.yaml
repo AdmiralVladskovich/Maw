@@ -30,7 +30,7 @@ spec:
       - objectName: "dynamic-Password"
         secretPath: "database/creds/postgres-role"
         secretKey: "password"
-      - objectName: "dynamic-User"
+      - objectName: "dynamic-Username"
         secretPath: "database/creds/postgres-role"
         secretKey: "username"
       
