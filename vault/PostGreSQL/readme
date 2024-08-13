@@ -12,3 +12,43 @@ path "secret/data/database/postgresql" {
 EOF
 
 vault write auth/kubernetes/role/postgresql-role bound_service_account_names=postgresql-sa bound_service_account_namespaces=postgresql policies=postgresql-policy ttl=1h
+
+
+Dynamic Secret
+
+vault secrets enable database
+
+
+vault write database/config/postgresql-database \
+  plugin_name=postgresql-database-plugin \
+  connection_url="postgresql://{{username}}:{{password}}@postgres.postgresql.svc.cluster.local:5432/postgres?sslmode=disable" \
+  allowed_roles="postgres-role" \
+  username="ps_user" \
+  password="anar1234"
+
+vault write database/roles/postgres-role \
+   db_name=postgresql-database \
+   creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
+      GRANT ALL PRIVILEGES ON DATABASE postgres TO \"{{name}}\";" \
+   revocation_statements="REVOKE ALL ON DATABASE postgres FROM  \"{{name}}\";" \
+   backend=postgresql-database \
+   name=postgres-role \
+   default_ttl="1m" \
+   max_ttl="1m"
+
+db_name is the DB connection that we created above. creation_statement describes command for creating the temporary>
+
+cat << EOF > postgresql-policy.hcl
+path "database/creds/postgres-role" {
+  capabilities = ["read"]
+}
+path "sys/leases/renew" {
+  capabilities = ["create"]
+}
+path "sys/leases/revoke" {
+  capabilities = ["update"]
+}
+EOF
+
+vault policy write postgresql-policy postgresql-policy.hcl
+
