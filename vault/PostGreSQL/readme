@@ -31,10 +31,11 @@ vault write database/roles/postgres-role \
    creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
       GRANT ALL PRIVILEGES ON DATABASE postgres TO \"{{name}}\";" \
    revocation_statements="REVOKE ALL ON DATABASE postgres FROM  \"{{name}}\";" \
-   backend=postgresql-database \
+   backend=postgresql-database  \
    name=postgres-role \
    default_ttl="1m" \
    max_ttl="1m"
+
 
 db_name is the DB connection that we created above. creation_statement describes command for creating the temporary>
 
@@ -47,6 +48,9 @@ path "sys/leases/renew" {
 }
 path "sys/leases/revoke" {
   capabilities = ["update"]
+}
+path "secret/data/database/postgresql" {
+  capabilities = ["read"]
 }
 EOF
 

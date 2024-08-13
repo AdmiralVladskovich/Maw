@@ -19,11 +19,19 @@ spec:
     roleName: 'postgresql-role'
     objects: |
       - objectName: "dbPassword"
-        secretPath: "database/creds/postgres-role"
+        secretPath: "secret/data/database/postgresql"
         secretKey: "password"
       - objectName: "dbName"
         secretPath: "secret/data/database/postgresql"
         secretKey: "database"
       - objectName: "dbUser"
+        secretPath: "secret/data/database/postgresql"
+        secretKey: "username"
+      - objectName: "dynamic-Password"
+        secretPath: "database/creds/postgres-role"
+        secretKey: "password"
+      - objectName: "dynamic-User"
         secretPath: "database/creds/postgres-role"
         secretKey: "username"
+      
+    
