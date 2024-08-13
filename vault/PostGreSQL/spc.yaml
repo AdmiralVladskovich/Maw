@@ -10,8 +10,6 @@ spec:
       data:
         - objectName: dbPassword
           key: password
-        - objectName: dbName
-          key: database
         - objectName: dbUser
           key: username
   parameters:
@@ -21,9 +19,6 @@ spec:
       - objectName: "dbPassword"
         secretPath: "secret/data/database/postgresql"
         secretKey: "password"
-      - objectName: "dbName"
-        secretPath: "secret/data/database/postgresql"
-        secretKey: "database"
       - objectName: "dbUser"
         secretPath: "secret/data/database/postgresql"
         secretKey: "username"
