@@ -1,0 +1,71 @@
+
+# To Enable
+vault secrets enable -version=2 -path=test kv
+
+# To Disable
+vault secrets disable test
+
+# To List secret engines
+vault secrets list
+
+# To "Put" a secret
+vault kv put secret/super-secret-path my-pass=hello123
+
+# To "Get" a secret
+vault kv get secret/super-secret-path
+
+# To update or "Patch" a secret
+vault kv patch secret/super-secret-path my-pass=patched123
+
+# You can move secret engines
+vault secrets move secret/ t1/secret/
+vault secrets move supersecret/ t2/supersecret/
+
+# To get version of the secret
+vault kv get -version=2 secret/super-secret-path
+
+# To delete all the versions and secret as a whole
+vault kv metadata delete secret/super-secret-path
+
+# Think of secret engine as a path/Directory. When we create secrets inside secret/path1/path2/secret you need to list the 2 paths to access it. You can't just secret/secret
+
+
+Token
+# We get root Token at the initialization of the vault. Root token is the most important token
+# It doesn't expire. Store it somewhere safe.
+
+# To create a token that follows policy
+# Each token created is created as a child of the currently authenticated token.
+vault token create --policy=default
+
+# Remember vault is path based
+# If we want to write policy
+path auth/*
+{
+  capabilities=["create", "read", "update", "delete", "list", "sudo"]  
+}
+# There is also "deny". But it is default (The paths that are not listed like the above is denied)
+
+path "+/data/db*" {
+  capabilities = ["read"]
+}
+
+path "t1/+/data/db*" {
+    capabilities = ["read"]
+}
+
+Username-Pass
+# Enable userpass auth method
+vault auth enable userpass
+vault auth enable -path=<path> userpass
+
+# To add username, password and policy it will follow
+vault write auth/<userpass:path>/users/<username> \
+  password=<password> \
+  policies=<policy>
+
+# User Lockout is enable by default (It will disable users from automation and bruteforcing)
+# 5 attempts - 15 minutes lockout duration - 15 min lockout counter reset
+
+
+

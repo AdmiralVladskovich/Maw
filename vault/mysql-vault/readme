@@ -1,0 +1,124 @@
+After your vault and database (mysql) is deployed 
+
+vault secrets enable database
+
+
+vault write database/config/mysql-database \
+  plugin_name=mysql-database-plugin \
+  connection_url="{{username}}:{{password}}@tcp(mysql-  slave.default.svc.cluster.local:3306)/" \
+  allowed_roles="mysql-role" \
+  username="root" \
+  password="password"
+
+  We are using mysql-database-plugin and the root user and the password that we created above to connect to the database. allowed_roles tell which vault roles can call this plugin. mysql-slave.default.svc.cluster.local:3306 is the name of MySQL DB service.
+
+
+  vault write database/roles/mysql-role \
+  db_name=mysql-database \
+  creation_statements="CREATE USER '{{name}}'@'%' IDENTIFIED BY '{{password}}';GRANT SELECT ON *.* TO '{{name}}'@'%';" \
+  default_ttl="1h" \
+  max_ttl="24h"
+
+db_name is the DB connection that we created above. creation_statement describes command for creating the temporary user. default_ttl describe the lease period of the credentials and max_ttl sets the max period for which the lease can be extended.
+
+cat << EOF > mysql-policy.hcl 
+path "db/creds/mysql-role" {
+  capabilities = ["read"]
+}
+path "sys/leases/renew" {
+  capabilities = ["create"]
+}
+path "sys/leases/revoke" {
+  capabilities = ["update"]
+}
+EOF
+
+vault policy write mysql-policy mysql-policy.hcl
+
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: role-tokenreview-binding
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: mysql-vault
+  namespace: default
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mysql-vault
+
+vault write auth/kubernetes/role/mysql \
+  bound_service_account_names=mysql-vault \
+  bound_service_account_namespaces=default \
+  policies=mysql-policy \
+  ttl=24h
+
+
+
+The one that works
+
+sh-4.4$ vault read db/config/mysql-database                                                                         
+Key                                   Value                                                                         
+---                                   -----                                                                         
+allowed_roles                         [mysql-role]                                                                  
+connection_details                    map[connection_url:{{username}}:{{password}}@tcp(mysql.mysql.svc.cluster.local:3306)/ username:root]                                                                                              
+password_policy                       n/a                                                                           
+plugin_name                           mysql-database-plugin                                                         
+plugin_version                        n/a                                                                           
+root_credentials_rotate_statements    []                                                                            
+sh-4.4$   
+
+sh-4.4$ vault read db/roles/mysql-role                                                                              
+Key                      Value                                                                                      
+---                      -----                                                                                      
+creation_statements      [CREATE USER '{{name}}'@'%' IDENTIFIED BY '{{password}}'; GRANT SELECT ON *.* TO '{{name}}'@'%';]                                                                                                              
+credential_type          password                                                                                   
+db_name                  mysql-database                                                                             
+default_ttl              1h                                                                                         
+max_ttl                  24h                                                                                        
+renew_statements         []                                                                                         
+revocation_statements    []                                                                                         
+rollback_statements      []                                                                                         
+sh-4.4$   
+
+sh-4.4$ vault policy read mysql-policy
+path "database/data/mysql" {
+  capabilities = ["read"]
+}
+path "db/creds/mysql-role" {
+  capabilities = ["read"]
+}
+path "sys/leases/renew" {
+  capabilities = ["create"]
+}
+path "sys/leases/revoke" {
+  capabilities = ["update"]
+}
+
+sh-4.4$ vault read auth/kubernetes/role/mysql-role
+Key                                         Value
+---                                         -----
+alias_name_source                           serviceaccount_uid
+bound_service_account_names                 [mysql-sa]
+bound_service_account_namespace_selector    n/a
+bound_service_account_namespaces            [mysql]
+policies                                    [mysql-policy]
+token_bound_cidrs                           []
+token_explicit_max_ttl                      0s
+token_max_ttl                               0s
+token_no_default_policy                     false
+token_num_uses                              0
+token_period                                0s
+token_policies                              [mysql-policy]
+token_ttl                                   1h
+token_type                                  default
+ttl  
+

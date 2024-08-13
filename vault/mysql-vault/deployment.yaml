@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+spec:
+  selector: 
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      serviceAccountName: mysql-sa
+      containers:
+      - image: mysql:latest
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-db-secret
+              key: password
+        volumeMounts:
+          - name: 'mysql-db'
+            mountPath: '/mnt/secrets-store'
+            readOnly: true
+          - name: mysql-persistent-storage
+            mountPath: /var/lib/mysql
+        ports:
+        - containerPort: 3306
+          name: mysql
+      volumes:
+      - name: mysql-db
+        csi:
+          driver: 'secrets-store.csi.k8s.io'
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: 'mysql-db'
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mysql-sa
+  labels:
+    app: mysql-sa

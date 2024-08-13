@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-mysql-app
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: mysql
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: 'https://github.com/AdmiralVladskovich/Maw.git'
+      path: vault/mysql-vault
+      targetRevision: HEAD

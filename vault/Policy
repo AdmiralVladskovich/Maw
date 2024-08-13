@@ -1,0 +1,149 @@
+Root Admin 
+Root Token (Why Not)
+
+to get auth_userpass_a3d85e5d Just  "vault auth list"
+ tee admin-policy.hcl <<EOF
+
+# Read system health check
+path "sys/health"
+{
+  capabilities = ["read", "sudo"]
+}
+
+# Create and manage ACL policies broadly across Vault
+
+# List existing policies
+path "sys/policies/acl"
+{
+  capabilities = ["list"]
+}
+
+# Create and manage ACL policies
+path "sys/policies/acl/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# Enable and manage authentication methods broadly across Vault
+
+# Manage auth methods broadly across Vault
+path "auth/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# Create, update, and delete auth methods
+path "sys/auth/*"
+{
+  capabilities = ["create", "update", "delete", "sudo"]
+}
+
+# List auth methods
+path "sys/auth"
+{
+  capabilities = ["read"]
+}
+
+# Enable and manage the key/value secrets engine at `secret/` path
+
+# List, create, update, and delete key/value secrets
+path "secret/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# Manage secrets engines
+path "sys/mounts/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# List existing secrets engines.
+path "sys/mounts"
+{
+  capabilities = ["read"]
+}
+EOF
+
+
+The dude that can see and shit
+
+The dude can create kubernetes roles.
+The dude can create secrets
+The dude can write to policy (Is it good idea ?)
+The dude can't create users, token (should)
+
+
+tee management-policy.hcl <<EOF
+path "auth/kubernetes/role/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+path "sys/auth"
+{
+  capabilities = ["read"]
+}
+
+# Have the ability to change your own password
+path "auth/userpass/users/{{identity.entity.aliases.auth_userpass_a3d85e5d.name}}" {
+    capabilities = ["update"]
+    allowed_parameters = {
+        "password" = []
+    }
+}
+
+# List existing policies
+path "sys/policies/acl"
+{
+  capabilities = ["list"]
+}
+
+# Create and manage ACL policies
+path "sys/policies/acl/development.*"
+{
+  capabilities = ["read", "list", "create", "update", "delete"]
+}
+
+# List, create, update, and delete key/value secrets
+path "secret/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# Manage secrets engines
+path "sys/mounts/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# List existing secrets engines.
+path "sys/mounts"
+{
+  capabilities = ["read"]
+}
+EOF
+
+Normal Developer
+Create Secret inside his allocated path
+
+tee developer-policy.hcl <<EOF
+
+# Have the ability to change your own password
+path "auth/userpass/users/{{identity.entity.aliases.auth_userpass_a3d85e5d.name}}" {
+    capabilities = ["update"]
+    allowed_parameters = {
+        "password" = []
+    }
+}
+
+# List secrets
+path "secret/*"
+{
+  capabilities = ["list"]
+}
+# List, change, create, delete secrets
+path "secret/data/developer/amarbold/*"
+{
+  capabilities = ["list", "read", "create", "update", "delete"]
+}
+EOF
