@@ -27,11 +27,5 @@ spec:
       - objectName: "dbUser"
         secretPath: "secret/data/database/postgresql"
         secretKey: "username"
-      - objectName: "dynamic-Password"
-        secretPath: "database/creds/postgres-role"
-        secretKey: "password"
-      - objectName: "dynamic-Username"
-        secretPath: "database/creds/postgres-role"
-        secretKey: "username"
       
     
