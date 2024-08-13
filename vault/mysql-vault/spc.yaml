@@ -11,9 +11,8 @@ spec:
         - objectName: dbPassword
           key: password
   parameters:
-    vaultAddress: "https://argo-vault-csi-internal.vault-csi-argocd:8200"
+    vaultAddress: "http://argo-vault-csi-internal.vault-csi-argocd:8200"
     roleName: 'mysql-role'
-    vaultSkipTLSVerify: "true"
     objects: |
       - objectName: "dbPassword"
         secretPath: "secret/data/database/mysql"
