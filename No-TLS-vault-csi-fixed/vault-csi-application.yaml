@@ -64,7 +64,7 @@ spec:
           # Vault UI
           ui:
             enabled: true
-            serviceType: "ClusterIP"
+            serviceType: "LoadBalancer"
             serviceNodePort: null
             externalPort: 80 
 
