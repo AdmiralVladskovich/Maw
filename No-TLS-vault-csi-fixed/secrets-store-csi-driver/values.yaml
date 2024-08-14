@@ -219,10 +219,10 @@ syncSecret:
   enabled: true
 
 ## Enable secret rotation feature [alpha]
-enableSecretRotation: true
+enableSecretRotation: false
 
 ## Secret rotation poll interval duration
-rotationPollInterval: 20s
+rotationPollInterval: null
 
 ## Provider HealthCheck
 providerHealthCheck: false
