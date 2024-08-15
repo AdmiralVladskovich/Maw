@@ -3,7 +3,7 @@ In initialized and Kubernetes auth serviceaccount enabled CSI Vault
 # If didn't enabled kv v2 secret engine named secret
 vault enable -version=2 -path=secret kv
 
-vault kv put secret/database/postgresql password=anar1234 username=ps_user database=ps_db
+vault kv put secret/database/postgresql password=anar1234 username=ps_user
 
 vault policy write postgresql-policy - << EOF
 path "secret/data/database/postgresql" {
@@ -23,18 +23,18 @@ vault write database/config/postgresql-database \
   plugin_name=postgresql-database-plugin \
   connection_url="postgresql://{{username}}:{{password}}@postgres.postgresql.svc.cluster.local:5432/postgres?sslmode=disable" \
   allowed_roles="postgres-role" \
-  username="postgres" \
-  password="postgres"
+  username="ps_user" \
+  password="anar1234"
 
 vault write database/roles/postgres-role \
    db_name=postgresql-database \
    creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
       GRANT ALL PRIVILEGES ON DATABASE postgres TO \"{{name}}\";" \
-   revocation_statements="REVOKE ALL ON DATABASE postgres FROM  \"{{name}}\";" \
+   revocation_statements="REVOKE ALL ON DATABASE postgres FROM  \"{{name}}\"; DROP ROLE IF EXISTS \"{{name}}\";" \
    backend=postgresql-database  \
    name=postgres-role \
-   default_ttl="1m" \
-   max_ttl="1m"
+   default_ttl="9h" \
+   max_ttl="9h"
 
 
 db_name is the DB connection that we created above. creation_statement describes command for creating the temporary>

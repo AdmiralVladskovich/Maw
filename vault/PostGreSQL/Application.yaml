@@ -1,0 +1,14 @@
+project: default
+source:
+  repoURL: 'https://github.com/AdmiralVladskovich/Maw.git'
+  path: vault/PostGreSQL
+  targetRevision: HEAD
+destination:
+  server: 'https://kubernetes.default.svc'
+  namespace: postgresql
+syncPolicy:
+  automated:
+    prune: true
+  syncOptions:
+    - CreateNamespace=true
+
