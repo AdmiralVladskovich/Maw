@@ -75,8 +75,8 @@ spec:
         values: |
           syncSecret:
             enabled: true
-          enableSecretRotation: true
-          rotationPollInterval: 2m
+          enableSecretRotation: false
+          rotationPollInterval: null
 
 
 
